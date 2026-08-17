@@ -1,0 +1,97 @@
+<resources>
+    <string name="app_name">Performance Monitor</string>
+
+    <!-- Main screen -->
+    <string name="main_title">Phone Performance Monitor</string>
+    <string name="main_status_stopped">Status: Stopped</string>
+    <string name="main_status_running">Status: Running ✓</string>
+    <string name="main_status_need_permission">Status: Permission needed</string>
+    <string name="btn_permission">1) Grant overlay permission</string>
+    <string name="btn_start">2) Start floating overlay</string>
+    <string name="btn_stop">Stop floating overlay</string>
+    <string name="btn_settings">⚙ Customization settings</string>
+    <string name="toast_permission_granted">Permission already granted ✓</string>
+    <string name="toast_need_permission">You must grant overlay permission first</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">⚙ Performance Monitor Settings</string>
+    <string name="settings_items_visible">Visible items</string>
+    <string name="settings_locked_label">Lock all items together when dragging (turn off to move each item independently)</string>
+    <string name="settings_bg_opacity">Background opacity</string>
+    <string name="settings_text_opacity">Text opacity</string>
+    <string name="settings_text_size">Text size</string>
+    <string name="settings_text_color">Text color</string>
+    <string name="settings_outline_toggle">Text outline (for extra clarity)</string>
+    <string name="settings_outline_color">Outline color</string>
+    <string name="settings_dark_mode">Dark mode</string>
+    <string name="settings_dark_mode_hint">Light / Dark / Follow system</string>
+    <string name="settings_language">App language</string>
+    <string name="settings_reset_positions">Reset all positions to default</string>
+    <string name="settings_footer_note">All changes here apply instantly to the floating overlay — no need to restart it.</string>
+    <string name="settings_spacing">Spacing between items</string>
+    <string name="settings_spacing_hint">Only affects reset / corner-snap layout, not items you dragged manually</string>
+    <string name="settings_position_lock">Lock position while gaming</string>
+    <string name="settings_position_lock_hint">When on, your taps pass straight through the overlay to the game underneath (protects against accidental dragging)</string>
+    <string name="settings_snap_title">Snap group to a corner</string>
+    <string name="snap_top_left">Top left</string>
+    <string name="snap_top_right">Top right</string>
+    <string name="snap_bottom_left">Bottom left</string>
+    <string name="snap_bottom_right">Bottom right</string>
+    <string name="snap_center">Center</string>
+    <string name="settings_bubble_hint">A small 🎮 bubble always floats on screen — tap it quickly to hide/show all items at once while gaming, or drag it to reposition. Drag it to either edge of the screen and it will auto-dock there (like Messenger chat heads); tap it again to bring it back.</string>
+    <string name="settings_bubble_title">Floating bubble settings</string>
+    <string name="settings_bubble_opacity">Bubble opacity</string>
+    <string name="settings_bubble_hide">Hide the bubble completely</string>
+    <string name="settings_bubble_hide_hint">When on, the bubble never shows — you can only toggle items via this settings screen while gaming</string>
+
+    <string name="item_ping">Ping (latency)</string>
+    <string name="item_netspeed">Internet speed</string>
+    <string name="overlay_ping">Ping: %1$d ms</string>
+    <string name="overlay_ping_unavailable">Ping: no connection</string>
+    <string name="overlay_netspeed">Down: %1$s Mbps</string>
+    <string name="overlay_netspeed_measuring">Measuring...</string>
+    <string name="lang_arabic">العربية</string>
+    <string name="lang_english">English</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">Follow system</string>
+
+    <!-- Overlay item labels -->
+    <string name="item_battery">Battery</string>
+    <string name="item_temp">Temperature</string>
+    <string name="item_ram">RAM</string>
+    <string name="item_cpu">CPU</string>
+    <string name="item_time">Time</string>
+    <string name="item_uptime">Uptime</string>
+    <string name="item_storage">Storage</string>
+    <string name="item_network">Network</string>
+    <string name="item_load">CPU load</string>
+    <string name="item_charging">Charging status</string>
+    <string name="item_fps">Frame rate (FPS)</string>
+
+    <!-- Actual overlay display text -->
+    <string name="overlay_battery">Battery: %1$d%%</string>
+    <string name="overlay_battery_charging_suffix"> ⚡</string>
+    <string name="overlay_temp">Temp: %1$s°C</string>
+    <string name="overlay_ram">RAM: %1$d/%2$d MB (%3$d%%)</string>
+    <string name="overlay_cpu">CPU: %1$d MHz (%2$d cores)</string>
+    <string name="overlay_cpu_unavailable">CPU: unavailable</string>
+    <string name="overlay_uptime">Uptime: %1$dh %2$dm</string>
+    <string name="overlay_storage">Free: %1$s/%2$s GB</string>
+    <string name="overlay_load">Load: %1$s</string>
+    <string name="overlay_load_unavailable">Load: unavailable</string>
+    <string name="overlay_charging_yes">Charging</string>
+    <string name="overlay_charging_no">Not charging</string>
+    <string name="overlay_fps">%1$d FPS</string>
+
+    <string name="network_wifi">Wi-Fi</string>
+    <string name="network_mobile">Mobile data</string>
+    <string name="network_ethernet">Ethernet</string>
+    <string name="network_connected">Connected</string>
+    <string name="network_disconnected">Disconnected</string>
+    <string name="network_unavailable">Unavailable</string>
+
+    <string name="notif_title">Performance Monitor is running</string>
+    <string name="notif_text">Tap to stop the floating overlay</string>
+    <string name="notif_stop_action">Stop</string>
+</resources>

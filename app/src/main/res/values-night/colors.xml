@@ -1,0 +1,7 @@
+<resources>
+    <color name="windowBackground">#121016</color>
+    <color name="cardBackground">#1E1C24</color>
+    <color name="primaryText">#F2F2F5</color>
+    <color name="secondaryText">#AFAFB8</color>
+    <color name="accentColor">#9E85FF</color>
+</resources>

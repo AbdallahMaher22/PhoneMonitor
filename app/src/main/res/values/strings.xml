@@ -1,0 +1,97 @@
+<resources>
+    <string name="app_name">مراقب الأداء</string>
+
+    <!-- الشاشة الرئيسية -->
+    <string name="main_title">مراقب أداء الهاتف</string>
+    <string name="main_status_stopped">الحالة: متوقف</string>
+    <string name="main_status_running">الحالة: يعمل ✓</string>
+    <string name="main_status_need_permission">الحالة: بحاجة لمنح الصلاحية</string>
+    <string name="btn_permission">١) منح صلاحية النافذة العائمة</string>
+    <string name="btn_start">٢) تشغيل النافذة العائمة</string>
+    <string name="btn_stop">إيقاف النافذة العائمة</string>
+    <string name="btn_settings">⚙ إعدادات التخصيص</string>
+    <string name="toast_permission_granted">الصلاحية ممنوحة بالفعل ✓</string>
+    <string name="toast_need_permission">يجب منح صلاحية النافذة العائمة أولاً</string>
+
+    <!-- شاشة الإعدادات -->
+    <string name="settings_title">⚙ إعدادات مراقب الأداء</string>
+    <string name="settings_items_visible">العناصر الظاهرة</string>
+    <string name="settings_locked_label">دمج كل العناصر معًا عند السحب (إيقافه يجعل كل عنصر حر بمكان مستقل)</string>
+    <string name="settings_bg_opacity">شفافية الخلفية</string>
+    <string name="settings_text_opacity">شفافية الكلام</string>
+    <string name="settings_text_size">حجم الخط</string>
+    <string name="settings_text_color">لون الخط</string>
+    <string name="settings_outline_toggle">حدود خارجية للكلام (لوضوح أكبر)</string>
+    <string name="settings_outline_color">لون الحدود</string>
+    <string name="settings_dark_mode">الوضع الليلي</string>
+    <string name="settings_dark_mode_hint">فاتح / داكن / حسب إعداد الهاتف</string>
+    <string name="settings_language">لغة واجهة التطبيق</string>
+    <string name="settings_reset_positions">إعادة كل المواقع للوضع الافتراضي</string>
+    <string name="settings_footer_note">كل التعديلات هنا تُطبَّق فوراً على النافذة العائمة دون الحاجة لإعادة تشغيلها.</string>
+    <string name="settings_spacing">التباعد بين العناصر</string>
+    <string name="settings_spacing_hint">يؤثر فقط عند إعادة الضبط أو اللصق بزاوية، وليس على العناصر المسحوبة يدوياً</string>
+    <string name="settings_position_lock">قفل الموقع أثناء اللعب</string>
+    <string name="settings_position_lock_hint">عند التفعيل، تمر لمساتك من خلال النافذة العائمة مباشرة للعبة تحتها (حماية من التحريك بالغلط)</string>
+    <string name="settings_snap_title">لصق المجموعة بزاوية</string>
+    <string name="snap_top_left">أعلى يسار</string>
+    <string name="snap_top_right">أعلى يمين</string>
+    <string name="snap_bottom_left">أسفل يسار</string>
+    <string name="snap_bottom_right">أسفل يمين</string>
+    <string name="snap_center">المنتصف</string>
+    <string name="settings_bubble_hint">فقاعة 🎮 صغيرة تظهر دائماً فوق الشاشة — اضغط عليها ضغطة سريعة لإخفاء/إظهار كل العناصر دفعة واحدة أثناء اللعب، أو اسحبها لتغيير مكانها. اسحبها لأي جانب من الشاشة وهتتخبّى تلقائياً هناك (زي فقاعات ماسنجر)، واضغط عليها تاني عشان تظهر تاني.</string>
+    <string name="settings_bubble_title">إعدادات الفقاعة العائمة</string>
+    <string name="settings_bubble_opacity">شفافية الفقاعة</string>
+    <string name="settings_bubble_hide">إخفاء الفقاعة نهائياً</string>
+    <string name="settings_bubble_hide_hint">عند التفعيل، لن تظهر الفقاعة إطلاقاً — لن تقدر تطوي/تفرد العناصر أثناء اللعب إلا بالعودة لهذه الشاشة</string>
+
+    <string name="item_ping">البينج (زمن الاستجابة)</string>
+    <string name="item_netspeed">سرعة الإنترنت</string>
+    <string name="overlay_ping">البينج: %1$d ms</string>
+    <string name="overlay_ping_unavailable">البينج: غير متصل</string>
+    <string name="overlay_netspeed">التنزيل: %1$s Mbps</string>
+    <string name="overlay_netspeed_measuring">جارِ القياس...</string>
+    <string name="lang_arabic">العربية</string>
+    <string name="lang_english">English</string>
+    <string name="theme_light">فاتح</string>
+    <string name="theme_dark">داكن</string>
+    <string name="theme_system">حسب النظام</string>
+
+    <!-- تسميات عناصر النافذة العائمة -->
+    <string name="item_battery">البطارية</string>
+    <string name="item_temp">الحرارة</string>
+    <string name="item_ram">الرام</string>
+    <string name="item_cpu">المعالج</string>
+    <string name="item_time">الوقت</string>
+    <string name="item_uptime">مدة التشغيل</string>
+    <string name="item_storage">التخزين</string>
+    <string name="item_network">الشبكة</string>
+    <string name="item_load">حِمل المعالج</string>
+    <string name="item_charging">حالة الشحن</string>
+    <string name="item_fps">معدل الفريمات (FPS)</string>
+
+    <!-- نصوص العرض الفعلي داخل النافذة العائمة -->
+    <string name="overlay_battery">البطارية: %1$d%%</string>
+    <string name="overlay_battery_charging_suffix"> ⚡</string>
+    <string name="overlay_temp">الحرارة: %1$s°C</string>
+    <string name="overlay_ram">الرام: %1$d/%2$d MB (%3$d%%)</string>
+    <string name="overlay_cpu">المعالج: %1$d MHz (%2$d أنوية)</string>
+    <string name="overlay_cpu_unavailable">المعالج: غير متاح</string>
+    <string name="overlay_uptime">التشغيل: %1$d س %2$d د</string>
+    <string name="overlay_storage">متاح: %1$s/%2$s GB</string>
+    <string name="overlay_load">الحِمل: %1$s</string>
+    <string name="overlay_load_unavailable">الحِمل: غير متاح</string>
+    <string name="overlay_charging_yes">يشحن الآن</string>
+    <string name="overlay_charging_no">لا يشحن</string>
+    <string name="overlay_fps">%1$d FPS</string>
+
+    <string name="network_wifi">واي فاي</string>
+    <string name="network_mobile">بيانات الجوال</string>
+    <string name="network_ethernet">إيثرنت</string>
+    <string name="network_connected">متصل</string>
+    <string name="network_disconnected">غير متصل</string>
+    <string name="network_unavailable">غير متاح</string>
+
+    <string name="notif_title">مراقب الأداء يعمل</string>
+    <string name="notif_text">اضغط لإيقاف النافذة العائمة</string>
+    <string name="notif_stop_action">إيقاف</string>
+</resources>
