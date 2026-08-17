@@ -17,12 +17,15 @@ class PingMeter {
     private var running = false
     private val handler = Handler(Looper.getMainLooper())
     private val executor = Executors.newSingleThreadExecutor()
-    private lateinit var scheduledTask: Runnable
+    
+    // تم تحويله إلى Nullable لتفادي الـ Crash إذا تم إيقافه قبل أن يبدأ
+    private var scheduledTask: Runnable? = null
 
     fun start(intervalMs: Long = 4000) {
         if (running) return
         running = true
-        scheduledTask = object : Runnable {
+        
+        val task = object : Runnable {
             override fun run() {
                 if (!running) return
                 executor.execute {
@@ -31,12 +34,15 @@ class PingMeter {
                 handler.postDelayed(this, intervalMs)
             }
         }
-        handler.post(scheduledTask)
+        scheduledTask = task
+        handler.post(task)
     }
 
     fun stop() {
         running = false
-        handler.removeCallbacks(scheduledTask)
+        // إلغاء الـ Callback بأمان فقط إذا كان موجوداً
+        scheduledTask?.let { handler.removeCallbacks(it) }
+        scheduledTask = null
     }
 
     fun getLastPing(): Int? = lastPingMs
