@@ -1,65 +1,115 @@
 package com.example.phonemonitor
 
-
-import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
-import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
-import kotlin.concurrent.thread
+import android.os.Build
+import android.os.Bundle
+import android.provider.Settings
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 
-object AppUpdater {
-    private const val GITHUB_API_URL = "https://api.github.com/repos/AbdallahMaher22/PhoneMonitor/releases/latest"
+class MainActivity : AppCompatActivity() {
 
-    fun checkForUpdates(context: Context) {
-        thread {
-            try {
-                val url = URL(GITHUB_API_URL)
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "GET"
-                connection.connectTimeout = 5000
-                connection.readTimeout = 5000
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(try {
+            LocaleHelper.onAttach(newBase)
+        } catch (e: Exception) {
+            newBase
+        })
+    }
 
-                if (connection.responseCode == 200) {
-                    val response = connection.inputStream.bufferedReader().readText()
-                    val json = JSONObject(response)
-                    val latestVersion = json.getString("tag_name").replace("v", "").trim()
-                    val currentVersion = context.packageManager.getPackageInfo(context.packageName, 0).versionName
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        try {
+            setContentView(R.layout.activity_main)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
-                    if (latestVersion != currentVersion) {
-                        val assets = json.getJSONArray("assets")
-                        var downloadUrl = json.getString("html_url")
-                        if (assets.length() > 0) {
-                            downloadUrl = assets.getJSONObject(0).getString("browser_download_url")
-                        }
+        val btnToggleService = findViewById<Button?>(R.id.btnToggleService)
+        val btnOpenSettings = findViewById<Button?>(R.id.btnOpenSettings)
+        val btnPermission = findViewById<Button?>(R.id.btnPermission)
+        val tvStatus = findViewById<TextView?>(R.id.tvStatus)
 
-                        Handler(Looper.getMainLooper()).post {
-                            showUpdateDialog(context, latestVersion, downloadUrl)
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+        // التحقق من الصلاحية
+        fun checkOverlayPermission(): Boolean {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Settings.canDrawOverlays(this)
+            } else {
+                true
             }
+        }
+
+        // تحديث حالة الواجهة
+        fun updateUI() {
+            val hasPermission = checkOverlayPermission()
+            if (hasPermission) {
+                btnPermission?.visibility = android.view.View.GONE
+                tvStatus?.text = "الصلاحيات ممنوحة - التطبيق جاهز للتشغيل"
+                tvStatus?.setTextColor(getColor(R.color.neon_green))
+            } else {
+                btnPermission?.visibility = android.view.View.VISIBLE
+                tvStatus?.text = "يجب منح إذن الظهور فوق التطبيقات أولاً"
+                tvStatus?.setTextColor(getColor(R.color.neon_red))
+            }
+        }
+
+        updateUI()
+
+        // زر منح الصلاحية
+        btnPermission?.setOnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+                startActivity(intent)
+            }
+        }
+
+        // زر تشغيل / إيقاف النافذة العائمة
+        btnToggleService?.setOnClickListener {
+            if (!checkOverlayPermission()) {
+                Toast.makeText(this, "يرجى منح إذن النافذة العائمة أولاً", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val serviceIntent = Intent(this, OverlayService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent)
+            } else {
+                startService(serviceIntent)
+            }
+            Toast.makeText(this, "تم تشغيل النافذة العائمة", Toast.LENGTH_SHORT).show()
+        }
+
+        // زر فتح الإعدادات
+        btnOpenSettings?.setOnClickListener {
+            val intent = Intent(this, OverlaySettingsActivity::class.java)
+            startActivity(intent)
+        }
+
+        // فحص التحديثات بأمان في الخلفية
+        try {
+            AppUpdater.checkForUpdates(this)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    private fun showUpdateDialog(context: Context, newVersion: String, downloadUrl: String) {
-        AlertDialog.Builder(context)
-            .setTitle("تحديث جديد متاح ($newVersion)")
-            .setMessage("يتوفر إصدار جديد من تطبيق PhoneMonitor. هل تريد التحديث الآن؟")
-            .setPositiveButton("تحديث الآن") { _, _ ->
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl)).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                }
-                context.startActivity(intent)
+    override fun onResume() {
+        super.onResume()
+        val btnPermission = findViewById<Button?>(R.id.btnPermission)
+        val tvStatus = findViewById<TextView?>(R.id.tvStatus)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Settings.canDrawOverlays(this)) {
+                btnPermission?.visibility = android.view.View.GONE
+                tvStatus?.text = "الصلاحيات ممنوحة - التطبيق جاهز للتشغيل"
+                tvStatus?.setTextColor(getColor(R.color.neon_green))
             }
-            .setNegativeButton("لاحقاً", null)
-            .setCancelable(true)
-            .show()
+        }
     }
 }
