@@ -13,8 +13,7 @@
         android:layout_height="72dp"
         android:layout_marginTop="30dp"
         android:layout_marginBottom="12dp"
-        android:src="@drawable/ic_launcher"
-        app:tint="@color/neon_cyan" />
+        android:src="@mipmap/ic_launcher" />
 
     <TextView
         android:layout_width="wrap_content"
