@@ -3,165 +3,207 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_dark"
-    android:fillViewport="true">
+    android:background="#0D1117"
+    android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
 
-        <!-- عنوان الشاشة -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp"
             android:text="إعدادات المراقبة"
-            android:textColor="@color/neon_cyan"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp"
-            android:layout_marginTop="8dp" />
+            android:textColor="#00E5FF"
+            android:textSize="26sp"
+            android:textStyle="bold" />
 
-        <!-- بطاقة اختيار المؤشرات -->
-        <com.google.android.material.card.MaterialCardView
+        <!-- كارت المؤشرات -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="@color/card_dark"
-            app:cardCornerRadius="14dp"
-            app:strokeColor="@color/card_stroke"
-            app:strokeWidth="1dp">
+            app:cardBackgroundColor="#161B22"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
                     android:text="المؤشرات المعروضة"
-                    android:textColor="@color/neon_cyan"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp" />
+                    android:textColor="#B388FF"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switchFps"
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/swFps"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
                     android:text="معدل الإطارات (FPS)"
-                    android:textColor="@color/text_primary" />
+                    android:textColor="#FFFFFF" />
 
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switchPing"
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/swPing"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
                     android:text="زمن الاستجابة (Ping)"
-                    android:textColor="@color/text_primary" />
+                    android:textColor="#FFFFFF" />
 
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switchNetSpeed"
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/swNet"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="سرعة نقل الشبكة (Net Speed)"
-                    android:textColor="@color/text_primary" />
+                    android:layout_marginBottom="12dp"
+                    android:text="سرعة الإنترنت (Net)"
+                    android:textColor="#FFFFFF" />
 
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switchTemp"
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/swTemp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="درجة حرارة البطارية (Temp)"
-                    android:textColor="@color/text_primary" />
+                    android:layout_marginBottom="12dp"
+                    android:text="حرارة البطارية (Temp)"
+                    android:textColor="#FFFFFF" />
 
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switchRam"
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/swRam"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="استهلاك الذاكرة (RAM)"
-                    android:textColor="@color/text_primary" />
+                    android:layout_marginBottom="12dp"
+                    android:text="استهلاك الرام (RAM)"
+                    android:textColor="#FFFFFF" />
 
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/swBattery"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:text="مستوى البطارية (%)"
+                    android:textColor="#FFFFFF" />
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+        </androidx.cardview.widget.CardView>
 
-        <!-- بطاقة مظهر النافذة -->
-        <com.google.android.material.card.MaterialCardView
+        <!-- كارت المظهر والتخصيص -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="@color/card_dark"
-            app:cardCornerRadius="14dp"
-            app:strokeColor="@color/card_stroke"
-            app:strokeWidth="1dp">
+            app:cardBackgroundColor="#161B22"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
                     android:text="المظهر والتخصيص"
-                    android:textColor="@color/neon_cyan"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="12dp" />
+                    android:textColor="#00E5FF"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvTextSizeLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="حجم الخط"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
+                    android:text="حجم الخط: 14"
+                    android:textColor="#8B949E" />
 
                 <SeekBar
-                    android:id="@+id/seekBarTextSize"
+                    android:id="@+id/seekTextSize"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
                     android:max="30"
                     android:min="10"
-                    android:progress="14"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="12dp" />
+                    android:progress="14" />
 
                 <TextView
                     android:id="@+id/tvOpacityLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="درجة الشفافية"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
+                    android:text="الشفافية: 100%"
+                    android:textColor="#8B949E" />
 
                 <SeekBar
-                    android:id="@+id/seekBarOpacity"
+                    android:id="@+id/seekOpacity"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:max="100"
-                    android:min="20"
-                    android:progress="90"
-                    android:layout_marginTop="4dp" />
-
+                    android:progress="100" />
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+        </androidx.cardview.widget.CardView>
 
-        <!-- زر حفظ وإغلاق -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSaveSettings"
+        <!-- كارت سلوك النافذة -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:text="حفظ وتطبيق"
-            android:textSize="15sp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:cardBackgroundColor="#161B22"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:text="سلوك النافذة أثناء اللعب"
+                    android:textColor="#FF9100"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/swSnap"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:text="الالتصاق التلقائي بحواف الشاشة"
+                    android:textColor="#FFFFFF" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/swLock"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="قفل مكان النافذة (منع السحب)"
+                    android:textColor="#FFFFFF" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginBottom="30dp"
+            android:backgroundTint="#00E5FF"
+            android:text="حفظ وتطبيق فوراً"
+            android:textColor="#000000"
+            android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="#0D1117"
-            app:cornerRadius="12dp"
-            app:backgroundTint="@color/neon_cyan"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp" />
+            app:cornerRadius="16dp" />
 
     </LinearLayout>
 </ScrollView>
