@@ -10,6 +10,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 
 class MainActivity : AppCompatActivity() {
 
@@ -23,18 +24,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        try {
-            setContentView(R.layout.activity_main)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        setContentView(R.layout.activity_main)
 
         val btnToggleService = findViewById<Button?>(R.id.btnToggleService)
         val btnOpenSettings = findViewById<Button?>(R.id.btnOpenSettings)
         val btnPermission = findViewById<Button?>(R.id.btnPermission)
         val tvStatus = findViewById<TextView?>(R.id.tvStatus)
 
-        // التحقق من الصلاحية
         fun checkOverlayPermission(): Boolean {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 Settings.canDrawOverlays(this)
@@ -43,23 +39,21 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // تحديث حالة الواجهة
         fun updateUI() {
             val hasPermission = checkOverlayPermission()
             if (hasPermission) {
                 btnPermission?.visibility = android.view.View.GONE
                 tvStatus?.text = "الصلاحيات ممنوحة - التطبيق جاهز للتشغيل"
-                tvStatus?.setTextColor(getColor(R.color.neon_green))
+                tvStatus?.setTextColor(ContextCompat.getColor(this, R.color.neon_green))
             } else {
                 btnPermission?.visibility = android.view.View.VISIBLE
                 tvStatus?.text = "يجب منح إذن الظهور فوق التطبيقات أولاً"
-                tvStatus?.setTextColor(getColor(R.color.neon_red))
+                tvStatus?.setTextColor(ContextCompat.getColor(this, R.color.neon_red))
             }
         }
 
         updateUI()
 
-        // زر منح الصلاحية
         btnPermission?.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val intent = Intent(
@@ -70,7 +64,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // زر تشغيل / إيقاف النافذة العائمة
         btnToggleService?.setOnClickListener {
             if (!checkOverlayPermission()) {
                 Toast.makeText(this, "يرجى منح إذن النافذة العائمة أولاً", Toast.LENGTH_SHORT).show()
@@ -86,13 +79,11 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "تم تشغيل النافذة العائمة", Toast.LENGTH_SHORT).show()
         }
 
-        // زر فتح الإعدادات
         btnOpenSettings?.setOnClickListener {
             val intent = Intent(this, OverlaySettingsActivity::class.java)
             startActivity(intent)
         }
 
-        // فحص التحديثات بأمان في الخلفية
         try {
             AppUpdater.checkForUpdates(this)
         } catch (e: Exception) {
@@ -108,7 +99,7 @@ class MainActivity : AppCompatActivity() {
             if (Settings.canDrawOverlays(this)) {
                 btnPermission?.visibility = android.view.View.GONE
                 tvStatus?.text = "الصلاحيات ممنوحة - التطبيق جاهز للتشغيل"
-                tvStatus?.setTextColor(getColor(R.color.neon_green))
+                tvStatus?.setTextColor(ContextCompat.getColor(this, R.color.neon_green))
             }
         }
     }
