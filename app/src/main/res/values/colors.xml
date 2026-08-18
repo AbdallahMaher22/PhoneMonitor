@@ -1,14 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_500">#6C4CE0</color>
-    <color name="purple_700">#4B32A8</color>
-    <color name="teal_200">#03DAC5</color>
-    <color name="black">#000000</color>
-    <color name="white">#FFFFFF</color>
+    <!-- الأساسيات والوضع الليلي -->
+    <color name="bg_dark">#0D1117</color>
+    <color name="card_dark">#161B22</color>
+    <color name="card_stroke">#30363D</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#8B949E</color>
 
-    <!-- ألوان تتكيف بين الوضع الفاتح والداكن -->
-    <color name="windowBackground">#F4F4F8</color>
-    <color name="cardBackground">#FFFFFF</color>
-    <color name="primaryText">#1A1A1A</color>
-    <color name="secondaryText">#6B6B6B</color>
-    <color name="accentColor">#6C4CE0</color>
+    <!-- ألوان نيون جيمنج للمؤشرات -->
+    <color name="neon_cyan">#00E5FF</color>
+    <color name="neon_green">#00E676</color>
+    <color name="neon_orange">#FF9100</color>
+    <color name="neon_red">#FF1744</color>
+    <color name="neon_purple">#7C4DFF</color>
+
+    <!-- ألوان التطبيق الرسمية -->
+    <color name="primary">#00E5FF</color>
+    <color name="primary_dark">#00B0FF</color>
+    <color name="accent">#00E676</color>
 </resources>
