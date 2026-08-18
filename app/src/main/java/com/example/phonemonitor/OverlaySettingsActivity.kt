@@ -1,269 +1,91 @@
 package com.example.phonemonitor
 
 import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
-import android.view.Gravity
 import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.RadioButton
-import android.widget.RadioGroup
 import android.widget.SeekBar
-import android.widget.Switch
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
+import com.google.android.material.switchmaterial.SwitchMaterial
 
 class OverlaySettingsActivity : AppCompatActivity() {
 
-    private val palette = listOf(
-        Color.WHITE, Color.BLACK, Color.parseColor("#F44336"), Color.parseColor("#E91E63"),
-        Color.parseColor("#9C27B0"), Color.parseColor("#673AB7"), Color.parseColor("#3F51B5"),
-        Color.parseColor("#2196F3"), Color.parseColor("#03A9F4"), Color.parseColor("#00BCD4"),
-        Color.parseColor("#009688"), Color.parseColor("#4CAF50"), Color.parseColor("#8BC34A"),
-        Color.parseColor("#CDDC39"), Color.parseColor("#FFEB3B"), Color.parseColor("#FFC107"),
-        Color.parseColor("#FF9800"), Color.parseColor("#FF5722"), Color.parseColor("#795548"),
-        Color.parseColor("#9E9E9E")
-    )
-
     override fun attachBaseContext(newBase: Context) {
-        val lang = PrefsManager.getLanguage(newBase)
-        super.attachBaseContext(LocaleHelper.wrap(newBase, lang))
+        super.attachBaseContext(LocaleHelper.onAttach(newBase))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        applyThemeMode()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        setupItemToggles()
-        setupLockedSwitch()
-        setupOpacitySeekBars()
-        setupTextSizeSeekBar()
-        setupColorGrid(findViewById(R.id.colorGridText)) { color ->
-            PrefsManager.setTextColorBase(this, color)
-        }
-        setupOutlineSection()
-        setupColorGrid(findViewById(R.id.colorGridOutline)) { color ->
-            PrefsManager.setOutlineColor(this, color)
-        }
-        setupThemeSection()
-        setupLanguageSection()
-        setupSpacingSeekBar()
-        setupPositionLockSwitch()
-        setupSnapButtons()
-        setupBubbleSection()
-        setupResetButton()
-    }
+        // مفاتيح تفعيل وتعطيل المؤشرات
+        val switchFps = findViewById<SwitchMaterial>(R.id.switchFps)
+        val switchPing = findViewById<SwitchMaterial>(R.id.switchPing)
+        val switchNetSpeed = findViewById<SwitchMaterial>(R.id.switchNetSpeed)
+        val switchTemp = findViewById<SwitchMaterial>(R.id.switchTemp)
+        val switchRam = findViewById<SwitchMaterial>(R.id.switchRam)
 
-    private fun applyThemeMode() {
-        val mode = when (PrefsManager.getThemeMode(this)) {
-            "light" -> AppCompatDelegate.MODE_NIGHT_NO
-            "dark" -> AppCompatDelegate.MODE_NIGHT_YES
-            else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-        }
-        AppCompatDelegate.setDefaultNightMode(mode)
-    }
+        // أشرطة التحكم في الحجم والشفافية
+        val seekBarTextSize = findViewById<SeekBar>(R.id.seekBarTextSize)
+        val seekBarOpacity = findViewById<SeekBar>(R.id.seekBarOpacity)
+        val tvTextSizeLabel = findViewById<TextView>(R.id.tvTextSizeLabel)
+        val tvOpacityLabel = findViewById<TextView>(R.id.tvOpacityLabel)
 
-    private fun setupItemToggles() {
-        val container = findViewById<LinearLayout>(R.id.itemsContainer)
-        for (item in OverlayItems.ALL) {
-            val row = LinearLayout(this)
-            row.orientation = LinearLayout.HORIZONTAL
-            row.gravity = Gravity.CENTER_VERTICAL
-            row.setPadding(0, 12, 0, 12)
+        val btnSaveSettings = findViewById<Button>(R.id.btnSaveSettings)
 
-            val label = TextView(this)
-            label.text = "${item.icon}  ${item.label(this)}"
-            label.textSize = 15f
-            label.setTextColor(getColorCompat(R.color.primaryText))
-            label.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        // تحميل القيم المحفوظة الحالية
+        switchFps.isChecked = PrefsManager.isShowFps(this)
+        switchPing.isChecked = PrefsManager.isShowPing(this)
+        switchNetSpeed.isChecked = PrefsManager.isShowNetSpeed(this)
+        switchTemp.isChecked = PrefsManager.isShowTemp(this)
+        switchRam.isChecked = PrefsManager.isShowRam(this)
 
-            val switch = Switch(this)
-            switch.isChecked = PrefsManager.isItemEnabled(this, item.key)
-            switch.setOnCheckedChangeListener { _, isChecked ->
-                PrefsManager.setItemEnabled(this, item.key, isChecked)
-            }
+        val currentSize = PrefsManager.getTextSize(this).toInt()
+        val currentOpacity = (PrefsManager.getOpacity(this) * 100).toInt()
 
-            row.addView(label)
-            row.addView(switch)
-            container.addView(row)
-        }
-    }
+        seekBarTextSize.progress = currentSize
+        tvTextSizeLabel.text = "حجم الخط: $currentSize sp"
 
-    private fun getColorCompat(resId: Int): Int =
-        androidx.core.content.ContextCompat.getColor(this, resId)
+        seekBarOpacity.progress = currentOpacity
+        tvOpacityLabel.text = "درجة الشفافية: $currentOpacity%"
 
-    private fun setupLockedSwitch() {
-        val switchLocked = findViewById<Switch>(R.id.switchLocked)
-        switchLocked.isChecked = PrefsManager.isLocked(this)
-        switchLocked.setOnCheckedChangeListener { _, isChecked ->
-            PrefsManager.setLocked(this, isChecked)
-        }
-    }
-
-    private fun setupOpacitySeekBars() {
-        val seekBg = findViewById<SeekBar>(R.id.seekBgOpacity)
-        seekBg.progress = PrefsManager.getBackgroundOpacity(this)
-        seekBg.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        // مراقبة تغيير حجم الخط
+        seekBarTextSize.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                PrefsManager.setBackgroundOpacity(this@OverlaySettingsActivity, progress)
+                val size = if (progress < 10) 10 else progress
+                tvTextSizeLabel.text = "حجم الخط: $size sp"
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        val seekText = findViewById<SeekBar>(R.id.seekTextOpacity)
-        seekText.progress = PrefsManager.getTextOpacity(this)
-        seekText.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        // مراقبة تغيير الشفافية
+        seekBarOpacity.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                PrefsManager.setTextOpacity(this@OverlaySettingsActivity, progress.coerceAtLeast(5))
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-    }
-
-    private fun setupTextSizeSeekBar() {
-        val seekSize = findViewById<SeekBar>(R.id.seekTextSize)
-        seekSize.progress = PrefsManager.getTextSize(this)
-        seekSize.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                PrefsManager.setTextSize(this@OverlaySettingsActivity, progress.coerceAtLeast(8))
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-    }
-
-    private fun setupColorGrid(container: LinearLayout, onPick: (Int) -> Unit) {
-        val sizePx = (40 * resources.displayMetrics.density).toInt()
-        val marginPx = (6 * resources.displayMetrics.density).toInt()
-        for (color in palette) {
-            val swatch = Button(this)
-            val params = LinearLayout.LayoutParams(sizePx, sizePx)
-            params.setMargins(marginPx, marginPx, marginPx, marginPx)
-            swatch.layoutParams = params
-            swatch.backgroundTintList = android.content.res.ColorStateList.valueOf(color)
-            swatch.text = ""
-            swatch.setOnClickListener { onPick(color) }
-            container.addView(swatch)
-        }
-    }
-
-    private fun setupOutlineSection() {
-        val switchOutline = findViewById<Switch>(R.id.switchOutline)
-        switchOutline.isChecked = PrefsManager.isOutlineEnabled(this)
-        switchOutline.setOnCheckedChangeListener { _, isChecked ->
-            PrefsManager.setOutlineEnabled(this, isChecked)
-        }
-    }
-
-    private fun setupThemeSection() {
-        val radioGroup = findViewById<RadioGroup>(R.id.radioTheme)
-        val radioLight = findViewById<RadioButton>(R.id.radioThemeLight)
-        val radioDark = findViewById<RadioButton>(R.id.radioThemeDark)
-        val radioSystem = findViewById<RadioButton>(R.id.radioThemeSystem)
-
-        when (PrefsManager.getThemeMode(this)) {
-            "light" -> radioLight.isChecked = true
-            "dark" -> radioDark.isChecked = true
-            else -> radioSystem.isChecked = true
-        }
-
-        radioGroup.setOnCheckedChangeListener { _, checkedId ->
-            val mode = when (checkedId) {
-                R.id.radioThemeLight -> "light"
-                R.id.radioThemeDark -> "dark"
-                else -> "system"
-            }
-            PrefsManager.setThemeMode(this, mode)
-            applyThemeMode()
-            recreate()
-        }
-    }
-
-    private fun setupLanguageSection() {
-        val radioGroup = findViewById<RadioGroup>(R.id.radioLanguage)
-        val radioArabic = findViewById<RadioButton>(R.id.radioArabic)
-        val radioEnglish = findViewById<RadioButton>(R.id.radioEnglish)
-
-        if (PrefsManager.getLanguage(this) == "en") {
-            radioEnglish.isChecked = true
-        } else {
-            radioArabic.isChecked = true
-        }
-
-        radioGroup.setOnCheckedChangeListener { _, checkedId ->
-            val lang = if (checkedId == R.id.radioEnglish) "en" else "ar"
-            PrefsManager.setLanguage(this, lang)
-            recreate()
-        }
-    }
-
-    private fun setupResetButton() {
-        findViewById<Button>(R.id.btnResetPositions).setOnClickListener {
-            PrefsManager.resetAllPositions(this)
-        }
-    }
-
-    private fun setupSpacingSeekBar() {
-        val seekSpacing = findViewById<SeekBar>(R.id.seekSpacing)
-        seekSpacing.progress = PrefsManager.getItemSpacing(this)
-        seekSpacing.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                PrefsManager.setItemSpacing(this@OverlaySettingsActivity, progress.coerceAtLeast(50))
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-    }
-
-    private fun setupPositionLockSwitch() {
-        val switchLock = findViewById<Switch>(R.id.switchPositionLock)
-        switchLock.isChecked = PrefsManager.isPositionLocked(this)
-        switchLock.setOnCheckedChangeListener { _, isChecked ->
-            PrefsManager.setPositionLocked(this, isChecked)
-        }
-    }
-
-    private fun setupSnapButtons() {
-        val displayMetrics = resources.displayMetrics
-        val screenWidth = displayMetrics.widthPixels
-        val screenHeight = displayMetrics.heightPixels
-
-        findViewById<Button>(R.id.btnSnapTopLeft).setOnClickListener {
-            PrefsManager.snapGroupToCorner(this, "top_left", screenWidth, screenHeight)
-        }
-        findViewById<Button>(R.id.btnSnapTopRight).setOnClickListener {
-            PrefsManager.snapGroupToCorner(this, "top_right", screenWidth, screenHeight)
-        }
-        findViewById<Button>(R.id.btnSnapBottomLeft).setOnClickListener {
-            PrefsManager.snapGroupToCorner(this, "bottom_left", screenWidth, screenHeight)
-        }
-        findViewById<Button>(R.id.btnSnapBottomRight).setOnClickListener {
-            PrefsManager.snapGroupToCorner(this, "bottom_right", screenWidth, screenHeight)
-        }
-        findViewById<Button>(R.id.btnSnapCenter).setOnClickListener {
-            PrefsManager.snapGroupToCorner(this, "center", screenWidth, screenHeight)
-        }
-    }
-
-    private fun setupBubbleSection() {
-        val seekOpacity = findViewById<SeekBar>(R.id.seekBubbleOpacity)
-        seekOpacity.progress = PrefsManager.getBubbleOpacity(this)
-        seekOpacity.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                PrefsManager.setBubbleOpacity(this@OverlaySettingsActivity, progress.coerceAtLeast(10))
+                val opacity = if (progress < 20) 20 else progress
+                tvOpacityLabel.text = "درجة الشفافية: $opacity%"
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        val switchHidden = findViewById<Switch>(R.id.switchBubbleHidden)
-        switchHidden.isChecked = PrefsManager.isBubbleHidden(this)
-        switchHidden.setOnCheckedChangeListener { _, isChecked ->
-            PrefsManager.setBubbleHidden(this, isChecked)
+        // زر الحفظ والتطبيق
+        btnSaveSettings.setOnClickListener {
+            PrefsManager.setShowFps(this, switchFps.isChecked)
+            PrefsManager.setShowPing(this, switchPing.isChecked)
+            PrefsManager.setShowNetSpeed(this, switchNetSpeed.isChecked)
+            PrefsManager.setShowTemp(this, switchTemp.isChecked)
+            PrefsManager.setShowRam(this, switchRam.isChecked)
+
+            val finalSize = if (seekBarTextSize.progress < 10) 10f else seekBarTextSize.progress.toFloat()
+            val finalOpacity = (if (seekBarOpacity.progress < 20) 20 else seekBarOpacity.progress) / 100f
+
+            PrefsManager.setTextSize(this, finalSize)
+            PrefsManager.setOpacity(this, finalOpacity)
+
+            Toast.makeText(this, "تم حفظ الإعدادات بنجاح", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 }
