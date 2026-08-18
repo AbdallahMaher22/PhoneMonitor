@@ -1,8 +1,5 @@
 package com.example.phonemonitor
 
-import android.animation.ValueAnimator
-import android.annotation.SuppressLint
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
@@ -14,206 +11,164 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.util.DisplayMetrics
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import androidx.core.app.NotificationCompat
-import kotlin.math.abs
 
 class OverlayService : Service() {
 
-    private var windowManager: WindowManager? = null
-    private var overlayView: OutlineTextView? = null
-    private var params: WindowManager.LayoutParams? = null
+    private lateinit var windowManager: WindowManager
+    private lateinit var floatingView: View
+    private lateinit var tvMetrics: OutlineTextView
+    private lateinit var params: WindowManager.LayoutParams
 
     private val handler = Handler(Looper.getMainLooper())
-    private var fpsMeter: FpsMeter? = null
-    private var pingMeter: PingMeter? = null
-    private var netMeter: NetworkSpeedMeter? = null
-    private var statsProvider: SystemStatsProvider? = null
-
-    companion object {
-        var isRunning = false
-        private const val CHANNEL_ID = "PhoneMonitorChannel"
-        private const val NOTIFICATION_ID = 101
-    }
+    private lateinit var fpsMeter: FpsMeter
+    private lateinit var pingMeter: PingMeter
+    private lateinit var netMeter: NetworkSpeedMeter
+    private lateinit var statsProvider: SystemStatsProvider
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
-        isRunning = true
-        startForeground(NOTIFICATION_ID, createNotification())
+        startForegroundServiceNotification()
 
-        fpsMeter = FpsMeter()
-        pingMeter = PingMeter()
-        netMeter = NetworkSpeedMeter()
-        statsProvider = SystemStatsProvider(this)
-
-        fpsMeter?.start()
-        pingMeter?.start()
-        netMeter?.start()
-
-        initOverlay()
-        startStatsUpdateLoop()
-    }
-
-    private fun createNotification(): Notification {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "مراقبة أداء النظام",
-                NotificationManager.IMPORTANCE_LOW
-            )
-            val manager = getSystemService(NotificationManager::class.java)
-            manager?.createNotificationChannel(channel)
-        }
-
-        return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Phone Monitor HUD")
-            .setContentText("المراقبة المباشرة للأداء قيد التشغيل")
-            .setSmallIcon(R.drawable.ic_launcher)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .build()
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private fun initOverlay() {
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        
+        // 1. تجهيز النص الاحترافي (Outline)
+        tvMetrics = OutlineTextView(this).apply {
+            setOutlineColor(Color.BLACK) // لون الحدود الخارجي
+            setOutlineWidth(5f) // سمك الحدود
+            setTextColor(PrefsManager.getTextColor(this@OverlayService)) // اللون الداخلي
+            textSize = PrefsManager.getTextSize(this@OverlayService)
+            alpha = PrefsManager.getOpacity(this@OverlayService)
+            setPadding(16, 16, 16, 16)
+        }
+        floatingView = tvMetrics
 
-        val layoutType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        // 2. إعدادات النافذة العائمة
+        val layoutFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         } else {
-            @Suppress("DEPRECATION")
             WindowManager.LayoutParams.TYPE_PHONE
         }
 
         params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
-            layoutType,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            layoutFlag,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT
-        ).apply {
-            gravity = Gravity.TOP or Gravity.START
-            x = 50
-            y = 200
-        }
+        )
+        params.gravity = Gravity.TOP or Gravity.START
+        params.x = 0
+        params.y = 150
 
-        overlayView = OutlineTextView(this).apply {
-            textSize = PrefsManager.getTextSize(this@OverlayService)
-            setTextColor(PrefsManager.getTextColor(this@OverlayService))
-            setOutlineColor(Color.BLACK)
-            setOutlineWidth(4f)
-            alpha = PrefsManager.getOpacity(this@OverlayService)
-            setPadding(16, 8, 16, 8)
-        }
+        windowManager.addView(floatingView, params)
 
-        setupTouchAndSnapListener()
-        windowManager?.addView(overlayView, params)
+        // 3. تفعيل السحب والالتصاق المغناطيسي
+        setupDragAndSnap()
+
+        // 4. تشغيل عدادات الأداء
+        fpsMeter = FpsMeter()
+        pingMeter = PingMeter()
+        netMeter = NetworkSpeedMeter()
+        statsProvider = SystemStatsProvider(this)
+
+        fpsMeter.start()
+        pingMeter.start()
+        netMeter.start()
+
+        handler.post(updateRunnable)
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    private fun setupTouchAndSnapListener() {
-        var initialX = 0
-        var initialY = 0
-        var touchStartX = 0f
-        var touchStartY = 0f
+    // 5. التحديث اللحظي للمؤشرات بناءً على مفاتيح الإعدادات
+    private val updateRunnable = object : Runnable {
+        override fun run() {
+            val sb = java.lang.StringBuilder()
+            
+            if (PrefsManager.isShowFps(this@OverlayService)) sb.append("FPS: ${fpsMeter.currentFps}  ")
+            if (PrefsManager.isShowPing(this@OverlayService)) sb.append("PING: ${pingMeter.currentPing}ms  ")
+            if (PrefsManager.isShowNetSpeed(this@OverlayService)) sb.append("NET: ${netMeter.speedFormatted}  ")
+            if (PrefsManager.isShowTemp(this@OverlayService)) sb.append("TEMP: ${statsProvider.batteryTemp.toInt()}°C  ")
+            if (PrefsManager.isShowRam(this@OverlayService)) sb.append("RAM: ${statsProvider.ramUsagePercent}%")
 
-        overlayView?.setOnTouchListener { _, event ->
-            val p = params ?: return@setOnTouchListener false
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    initialX = p.x
-                    initialY = p.y
-                    touchStartX = event.rawX
-                    touchStartY = event.rawY
-                    true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    p.x = initialX + (event.rawX - touchStartX).toInt()
-                    p.y = initialY + (event.rawY - touchStartY).toInt()
-                    windowManager?.updateViewLayout(overlayView, p)
-                    true
-                }
-                MotionEvent.ACTION_UP -> {
-                    // سحب النافذة تلقائياً لأقرب حافة (Snap to edge)
-                    val metrics = DisplayMetrics()
-                    windowManager?.defaultDisplay?.getMetrics(metrics)
-                    val screenWidth = metrics.widthPixels
-                    val middle = screenWidth / 2
-                    val targetX = if (p.x + (overlayView?.width ?: 0) / 2 < middle) 20 else screenWidth - (overlayView?.width ?: 0) - 20
+            tvMetrics.text = sb.toString().trim()
+            
+            // تطبيق الشفافية والحجم فوراً إذا تم تغييرهم من الإعدادات
+            tvMetrics.textSize = PrefsManager.getTextSize(this@OverlayService)
+            tvMetrics.alpha = PrefsManager.getOpacity(this@OverlayService)
 
-                    animateSnap(p.x, targetX)
-                    true
-                }
-                else -> false
-            }
+            handler.postDelayed(this, 1000) // تحديث كل ثانية
         }
     }
 
-    private fun animateSnap(startX: Int, endX: Int) {
-        val animator = ValueAnimator.ofInt(startX, endX)
-        animator.duration = 200
-        animator.addUpdateListener { animation ->
-            params?.let { p ->
-                p.x = animation.animatedValue as Int
-                windowManager?.updateViewLayout(overlayView, p)
-            }
-        }
-        animator.start()
-    }
+    private fun setupDragAndSnap() {
+        floatingView.setOnTouchListener(object : View.OnTouchListener {
+            private var initialX = 0
+            private var initialY = 0
+            private var initialTouchX = 0f
+            private var initialTouchY = 0f
 
-    private fun startStatsUpdateLoop() {
-        handler.post(object : Runnable {
-            override fun run() {
-                if (!isRunning) return
-                updateHUDText()
-                handler.postDelayed(this, 500)
+            override fun onTouch(v: View?, event: MotionEvent): Boolean {
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        initialX = params.x
+                        initialY = params.y
+                        initialTouchX = event.rawX
+                        initialTouchY = event.rawY
+                        return true
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        params.x = initialX + (event.rawX - initialTouchX).toInt()
+                        params.y = initialY + (event.rawY - initialTouchY).toInt()
+                        windowManager.updateViewLayout(floatingView, params)
+                        return true
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        // الالتصاق بالحواف (Snap to Edge)
+                        val screenWidth = resources.displayMetrics.widthPixels
+                        val middle = screenWidth / 2
+                        if (params.x + (floatingView.width / 2) < middle) {
+                            params.x = 0 // يلتصق باليسار
+                        } else {
+                            params.x = screenWidth - floatingView.width // يلتصق باليمين
+                        }
+                        windowManager.updateViewLayout(floatingView, params)
+                        return true
+                    }
+                }
+                return false
             }
         })
     }
 
-    private fun updateHUDText() {
-        val builder = StringBuilder()
-        
-        val fps = fpsMeter?.currentFps ?: 0
-        val ping = pingMeter?.currentPing ?: -1
-        val netSpeed = netMeter?.speedFormatted ?: ""
-        val temp = statsProvider?.batteryTemp ?: 0f
-        val ram = statsProvider?.ramUsagePercent ?: 0
-
-        if (PrefsManager.isShowFps(this)) {
-            builder.append("FPS: $fps  ")
+    private fun startForegroundServiceNotification() {
+        val channelId = "overlay_channel"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(channelId, "Phone Monitor Overlay", NotificationManager.IMPORTANCE_LOW)
+            val manager = getSystemService(NotificationManager::class.java)
+            manager?.createNotificationChannel(channel)
         }
-        if (PrefsManager.isShowPing(this) && ping >= 0) {
-            builder.append("PING: ${ping}ms  ")
-        }
-        if (PrefsManager.isShowNetSpeed(this) && netSpeed.isNotEmpty()) {
-            builder.append("NET: $netSpeed  ")
-        }
-        if (PrefsManager.isShowTemp(this)) {
-            builder.append("TEMP: ${temp.toInt()}°C  ")
-        }
-        if (PrefsManager.isShowRam(this)) {
-            builder.append("RAM: $ram%")
-        }
-
-        overlayView?.text = builder.toString().trim()
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("مراقب الأداء يعمل")
+            .setContentText("النافذة العائمة قيد التشغيل")
+            .setSmallIcon(android.R.drawable.ic_menu_info_details)
+            .build()
+        startForeground(1, notification)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        isRunning = false
-        handler.removeCallbacksAndMessages(null)
-        fpsMeter?.stop()
-        pingMeter?.stop()
-        netMeter?.stop()
-
-        if (overlayView != null && windowManager != null) {
-            windowManager?.removeView(overlayView)
+        fpsMeter.stop()
+        pingMeter.stop()
+        netMeter.stop()
+        handler.removeCallbacks(updateRunnable)
+        if (::floatingView.isInitialized) {
+            windowManager.removeView(floatingView)
         }
     }
 }
