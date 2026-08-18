@@ -5,44 +5,54 @@ import android.content.SharedPreferences
 import android.graphics.Color
 
 object PrefsManager {
-    private const val PREF_NAME = "phone_monitor_prefs"
-
-    private const val KEY_SHOW_FPS = "show_fps"
-    private const val KEY_SHOW_PING = "show_ping"
-    private const val KEY_SHOW_NET_SPEED = "show_net_speed"
-    private const val KEY_SHOW_TEMP = "show_temp"
-    private const val KEY_SHOW_RAM = "show_ram"
-    private const val KEY_TEXT_SIZE = "text_size"
-    private const val KEY_OPACITY = "opacity"
-    private const val KEY_TEXT_COLOR = "text_color"
+    private const val PREF_NAME = "PhoneMonitorPrefs"
 
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     }
 
     // المؤشرات
-    fun isShowFps(context: Context): Boolean = getPrefs(context).getBoolean(KEY_SHOW_FPS, true)
-    fun setShowFps(context: Context, value: Boolean) = getPrefs(context).edit().putBoolean(KEY_SHOW_FPS, value).apply()
+    fun isShowFps(context: Context) = getPrefs(context).getBoolean("show_fps", true)
+    fun isShowPing(context: Context) = getPrefs(context).getBoolean("show_ping", true)
+    fun isShowNetSpeed(context: Context) = getPrefs(context).getBoolean("show_net", true)
+    fun isShowTemp(context: Context) = getPrefs(context).getBoolean("show_temp", true)
+    fun isShowRam(context: Context) = getPrefs(context).getBoolean("show_ram", false)
+    fun isShowBattery(context: Context) = getPrefs(context).getBoolean("show_battery", false)
+    fun isShowCpu(context: Context) = getPrefs(context).getBoolean("show_cpu", false)
 
-    fun isShowPing(context: Context): Boolean = getPrefs(context).getBoolean(KEY_SHOW_PING, true)
-    fun setShowPing(context: Context, value: Boolean) = getPrefs(context).edit().putBoolean(KEY_SHOW_PING, value).apply()
+    // المظهر والتخصيص
+    fun getTextSize(context: Context) = getPrefs(context).getFloat("text_size", 14f)
+    fun getOpacity(context: Context) = getPrefs(context).getFloat("opacity", 1.0f)
+    fun getTextColor(context: Context) = getPrefs(context).getInt("text_color", Color.CYAN)
+    fun getOutlineColor(context: Context) = getPrefs(context).getInt("outline_color", Color.BLACK)
 
-    fun isShowNetSpeed(context: Context): Boolean = getPrefs(context).getBoolean(KEY_SHOW_NET_SPEED, false)
-    fun setShowNetSpeed(context: Context, value: Boolean) = getPrefs(context).edit().putBoolean(KEY_SHOW_NET_SPEED, value).apply()
+    // السلوك
+    fun isSnapToEdge(context: Context) = getPrefs(context).getBoolean("snap_to_edge", true)
+    fun isLockPosition(context: Context) = getPrefs(context).getBoolean("lock_position", false)
 
-    fun isShowTemp(context: Context): Boolean = getPrefs(context).getBoolean(KEY_SHOW_TEMP, true)
-    fun setShowTemp(context: Context, value: Boolean) = getPrefs(context).edit().putBoolean(KEY_SHOW_TEMP, value).apply()
+    // دالة الحفظ الشاملة
+    fun saveSettings(
+        context: Context, fps: Boolean, ping: Boolean, net: Boolean, temp: Boolean,
+        ram: Boolean, battery: Boolean, cpu: Boolean,
+        textSize: Float, opacity: Float, snap: Boolean, lock: Boolean
+    ) {
+        getPrefs(context).edit().apply {
+            putBoolean("show_fps", fps)
+            putBoolean("show_ping", ping)
+            putBoolean("show_net", net)
+            putBoolean("show_temp", temp)
+            putBoolean("show_ram", ram)
+            putBoolean("show_battery", battery)
+            putBoolean("show_cpu", cpu)
+            putFloat("text_size", textSize)
+            putFloat("opacity", opacity)
+            putBoolean("snap_to_edge", snap)
+            putBoolean("lock_position", lock)
+            apply()
+        }
+    }
 
-    fun isShowRam(context: Context): Boolean = getPrefs(context).getBoolean(KEY_SHOW_RAM, true)
-    fun setShowRam(context: Context, value: Boolean) = getPrefs(context).edit().putBoolean(KEY_SHOW_RAM, value).apply()
-
-    // المظهر والشفافية
-    fun getTextSize(context: Context): Float = getPrefs(context).getFloat(KEY_TEXT_SIZE, 14f)
-    fun setTextSize(context: Context, value: Float) = getPrefs(context).edit().putFloat(KEY_TEXT_SIZE, value).apply()
-
-    fun getOpacity(context: Context): Float = getPrefs(context).getFloat(KEY_OPACITY, 0.9f)
-    fun setOpacity(context: Context, value: Float) = getPrefs(context).edit().putFloat(KEY_OPACITY, value).apply()
-
-    fun getTextColor(context: Context): Int = getPrefs(context).getInt(KEY_TEXT_COLOR, Color.parseColor("#00E5FF"))
-    fun setTextColor(context: Context, value: Int) = getPrefs(context).edit().putInt(KEY_TEXT_COLOR, value).apply()
+    fun saveColor(context: Context, key: String, color: Int) {
+        getPrefs(context).edit().putInt(key, color).apply()
+    }
 }
