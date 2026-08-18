@@ -1,75 +1,64 @@
 package com.example.phonemonitor
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.provider.Settings
-import android.widget.Button
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import android.os.Handler
+import android.os.Looper
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
+import kotlin.concurrent.thread
 
-class MainActivity : AppCompatActivity() {
+object AppUpdater {
+    private const val GITHUB_API_URL = "https://api.github.com/repos/AbdallahMaher22/PhoneMonitor/releases/latest"
 
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(LocaleHelper.onAttach(newBase))
-    }
+    fun checkForUpdates(context: Context) {
+        thread {
+            try {
+                val url = URL(GITHUB_API_URL)
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.connectTimeout = 5000
+                connection.readTimeout = 5000
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+                if (connection.responseCode == 200) {
+                    val response = connection.inputStream.bufferedReader().readText()
+                    val json = JSONObject(response)
+                    val latestVersion = json.getString("tag_name").replace("v", "").trim()
+                    val currentVersion = context.packageManager.getPackageInfo(context.packageName, 0).versionName
 
-        // فحص التحديثات تلقائياً من GitHub عند تشغيل التطبيق
-        AppUpdater.checkForUpdates(this)
+                    if (latestVersion != currentVersion) {
+                        val assets = json.getJSONArray("assets")
+                        var downloadUrl = json.getString("html_url")
+                        if (assets.length() > 0) {
+                            downloadUrl = assets.getJSONObject(0).getString("browser_download_url")
+                        }
 
-        val btnToggleOverlay = findViewById<Button>(R.id.btnToggleOverlay)
-        val btnSettings = findViewById<Button>(R.id.btnSettings)
-
-        btnToggleOverlay?.setOnClickListener {
-            if (checkOverlayPermission()) {
-                toggleService()
-            } else {
-                requestOverlayPermission()
+                        Handler(Looper.getMainLooper()).post {
+                            showUpdateDialog(context, latestVersion, downloadUrl)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
-
-        btnSettings?.setOnClickListener {
-            startActivity(Intent(this, OverlaySettingsActivity::class.java))
-        }
     }
 
-    private fun checkOverlayPermission(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Settings.canDrawOverlays(this)
-        } else {
-            true
-        }
-    }
-
-    private fun requestOverlayPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val intent = Intent(
-                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:$packageName")
-            )
-            startActivity(intent)
-            Toast.makeText(this, "يرجى منح إذن الظهور فوق التطبيقات", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun toggleService() {
-        val intent = Intent(this, OverlayService::class.java)
-        if (OverlayService.isRunning) {
-            stopService(intent)
-            Toast.makeText(this, "تم إيقاف المراقبة", Toast.LENGTH_SHORT).show()
-        } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(intent)
-            } else {
-                startService(intent)
+    private fun showUpdateDialog(context: Context, newVersion: String, downloadUrl: String) {
+        AlertDialog.Builder(context)
+            .setTitle("تحديث جديد متاح ($newVersion)")
+            .setMessage("يتوفر إصدار جديد من تطبيق PhoneMonitor. هل تريد التحديث الآن؟")
+            .setPositiveButton("تحديث الآن") { _, _ ->
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl)).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                context.startActivity(intent)
             }
-            Toast.makeText(this, "تم تشغيل المراقبة", Toast.LENGTH_SHORT).show()
-        }
+            .setNegativeButton("لاحقاً", null)
+            .setCancelable(true)
+            .show()
     }
 }
