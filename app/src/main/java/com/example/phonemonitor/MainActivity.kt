@@ -83,12 +83,6 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, OverlaySettingsActivity::class.java)
             startActivity(intent)
         }
-
-        try {
-            AppUpdater.checkForUpdates(this)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
     }
 
     override fun onResume() {
