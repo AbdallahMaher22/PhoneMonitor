@@ -1,35 +1,53 @@
 package com.example.phonemonitor
 
 import android.net.TrafficStats
+import android.os.Handler
+import android.os.Looper
+import java.util.Locale
 
-/**
- * يقيس سرعة الإنترنت الفعلية الحالية (ليس اختبار سرعة نشط) عبر قراءة إجمالي
- * البيانات المُستقبَلة من النظام (TrafficStats) وحساب الفرق بين قراءتين.
- * هذا لا يستهلك أي بيانات إضافية من باقتك، ويعكس فقط ما يجري تحميله فعلياً
- * الآن (تصفح، تحديثات تطبيقات، إلخ) — وليس اختبار سرعة نشط (Speedtest).
- */
 class NetworkSpeedMeter {
-    private var lastBytes = -1L
-    private var lastTimeMs = 0L
+    private var lastTotalRxBytes: Long = 0
+    private var lastTimeStamp: Long = 0
+    private var isRunning = false
+    private val handler = Handler(Looper.getMainLooper())
 
-    fun sampleMbps(): Double {
-        val now = System.currentTimeMillis()
-        val bytes = TrafficStats.getTotalRxBytes()
-        if (bytes < 0) return 0.0
+    @Volatile
+    var speedFormatted: String = "0 KB/s"
+        private set
 
-        if (lastBytes < 0) {
-            lastBytes = bytes
-            lastTimeMs = now
-            return 0.0
+    fun start() {
+        if (isRunning) return
+        isRunning = true
+        lastTotalRxBytes = TrafficStats.getTotalRxBytes()
+        lastTimeStamp = System.currentTimeMillis()
+        scheduleUpdate()
+    }
+
+    fun stop() {
+        isRunning = false
+        handler.removeCallbacksAndMessages(null)
+    }
+
+    private fun scheduleUpdate() {
+        if (!isRunning) return
+        val currentRx = TrafficStats.getTotalRxBytes()
+        val currentTime = System.currentTimeMillis()
+        val timeDiff = currentTime - lastTimeStamp
+
+        if (timeDiff >= 1000 && lastTotalRxBytes != 0L) {
+            val bytesDiff = currentRx - lastTotalRxBytes
+            val speedKb = (bytesDiff * 1000) / (timeDiff * 1024)
+
+            speedFormatted = if (speedKb >= 1024) {
+                String.format(Locale.US, "%.1f MB/s", speedKb / 1024f)
+            } else {
+                "$speedKb KB/s"
+            }
+
+            lastTotalRxBytes = currentRx
+            lastTimeStamp = currentTime
         }
 
-        val deltaBytes = (bytes - lastBytes).coerceAtLeast(0)
-        val deltaSeconds = (now - lastTimeMs) / 1000.0
-        lastBytes = bytes
-        lastTimeMs = now
-
-        if (deltaSeconds <= 0) return 0.0
-        val bitsPerSecond = deltaBytes * 8 / deltaSeconds
-        return bitsPerSecond / 1_000_000.0
+        handler.postDelayed({ scheduleUpdate() }, 1000)
     }
 }
