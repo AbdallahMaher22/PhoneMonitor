@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.abdallahmaher.phonemonitor'
+    namespace 'com.example.phonemonitor'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.abdallahmaher.phonemonitor"
+        applicationId "com.example.phonemonitor"
         minSdk 24
         targetSdk 34
         versionCode 2
@@ -27,10 +27,12 @@ android {
             minifyEnabled false
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = '1.8'
     }
