@@ -1,35 +1,45 @@
 package com.example.phonemonitor
 
-import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 
 class MainActivity : AppCompatActivity() {
 
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(try {
-            LocaleHelper.onAttach(newBase)
-        } catch (e: Exception) {
-            newBase
-        })
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        try {
+            setContentView(R.layout.activity_main)
+            setupUI()
+        } catch (e: Throwable) {
+            // في حالة حدوث أي خطأ سيظهر على الشاشة بدلاً من إغلاق التطبيق
+            showCrashScreen(e)
+        }
+    }
 
-        val btnToggleService = findViewById<Button?>(R.id.btnToggleService)
-        val btnOpenSettings = findViewById<Button?>(R.id.btnOpenSettings)
-        val btnPermission = findViewById<Button?>(R.id.btnPermission)
-        val tvStatus = findViewById<TextView?>(R.id.tvStatus)
+    private fun showCrashScreen(e: Throwable) {
+        val scrollView = ScrollView(this)
+        val tv = TextView(this)
+        tv.text = "حدث خطأ أثناء الفتح، يرجى تصوير الشاشة:\n\n${e.stackTraceToString()}"
+        tv.setTextColor(Color.RED)
+        tv.setPadding(32, 32, 32, 32)
+        scrollView.addView(tv)
+        setContentView(scrollView)
+    }
+
+    private fun setupUI() {
+        val btnToggleService = findViewById<Button>(R.id.btnToggleService)
+        val btnOpenSettings = findViewById<Button>(R.id.btnOpenSettings)
+        val btnPermission = findViewById<Button>(R.id.btnPermission)
+        val tvStatus = findViewById<TextView>(R.id.tvStatus)
 
         fun checkOverlayPermission(): Boolean {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -40,61 +50,62 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun updateUI() {
-            val hasPermission = checkOverlayPermission()
-            if (hasPermission) {
-                btnPermission?.visibility = android.view.View.GONE
-                tvStatus?.text = "الصلاحيات ممنوحة - التطبيق جاهز للتشغيل"
-                tvStatus?.setTextColor(ContextCompat.getColor(this, R.color.neon_green))
+            if (checkOverlayPermission()) {
+                btnPermission.visibility = android.view.View.GONE
+                tvStatus.text = "الصلاحيات ممنوحة - التطبيق جاهز للتشغيل"
+                tvStatus.setTextColor(Color.parseColor("#00E676"))
             } else {
-                btnPermission?.visibility = android.view.View.VISIBLE
-                tvStatus?.text = "يجب منح إذن الظهور فوق التطبيقات أولاً"
-                tvStatus?.setTextColor(ContextCompat.getColor(this, R.color.neon_red))
+                btnPermission.visibility = android.view.View.VISIBLE
+                tvStatus.text = "يجب منح إذن الظهور فوق التطبيقات أولاً"
+                tvStatus.setTextColor(Color.parseColor("#FF1744"))
             }
         }
 
         updateUI()
 
-        btnPermission?.setOnClickListener {
+        btnPermission.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val intent = Intent(
-                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:$packageName")
-                )
-                startActivity(intent)
+                startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
             }
         }
 
-        btnToggleService?.setOnClickListener {
+        btnToggleService.setOnClickListener {
             if (!checkOverlayPermission()) {
-                Toast.makeText(this, "يرجى منح إذن النافذة العائمة أولاً", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "يرجى منح الإذن أولاً", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
-            val serviceIntent = Intent(this, OverlayService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(serviceIntent)
-            } else {
-                startService(serviceIntent)
+            try {
+                val serviceIntent = Intent(this, OverlayService::class.java)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(serviceIntent)
+                } else {
+                    startService(serviceIntent)
+                }
+                Toast.makeText(this, "تم تشغيل النافذة العائمة", Toast.LENGTH_SHORT).show()
+            } catch (e: Throwable) {
+                Toast.makeText(this, "خطأ: ${e.message}", Toast.LENGTH_LONG).show()
             }
-            Toast.makeText(this, "تم تشغيل النافذة العائمة", Toast.LENGTH_SHORT).show()
         }
 
-        btnOpenSettings?.setOnClickListener {
-            val intent = Intent(this, OverlaySettingsActivity::class.java)
-            startActivity(intent)
+        btnOpenSettings.setOnClickListener {
+            try {
+                startActivity(Intent(this, OverlaySettingsActivity::class.java))
+            } catch (e: Throwable) {
+                Toast.makeText(this, "خطأ الإعدادات: ${e.message}", Toast.LENGTH_LONG).show()
+            }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        val btnPermission = findViewById<Button?>(R.id.btnPermission)
-        val tvStatus = findViewById<TextView?>(R.id.tvStatus)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (Settings.canDrawOverlays(this)) {
-                btnPermission?.visibility = android.view.View.GONE
-                tvStatus?.text = "الصلاحيات ممنوحة - التطبيق جاهز للتشغيل"
-                tvStatus?.setTextColor(ContextCompat.getColor(this, R.color.neon_green))
+        try {
+            val btnPermission = findViewById<Button>(R.id.btnPermission)
+            val tvStatus = findViewById<TextView>(R.id.tvStatus)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(this)) {
+                btnPermission.visibility = android.view.View.GONE
+                tvStatus.text = "الصلاحيات ممنوحة - التطبيق جاهز للتشغيل"
+                tvStatus.setTextColor(Color.parseColor("#00E676"))
             }
-        }
+        } catch (e: Throwable) {}
     }
 }
